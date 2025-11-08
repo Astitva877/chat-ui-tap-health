@@ -27,16 +27,25 @@ export default function ChatScreen() {
     // Simulate assistant typing
     setIsTyping(true);
     setTimeout(() => {
-      setMessages((prev) => [
-        {
-          id: Date.now().toString(),
-          sender: "assistant",
-          type: "text",
-          text: "Got it! 👌",
-        },
-        ...prev,
-      ]);
+      // Add streaming message from assistant
+      const assistantMsg: Message = {
+        id: Date.now().toString(),
+        sender: "assistant",
+        type: "text",
+        text: "Got it! 👌 I received your message. Let me process that for you. This is a longer response to demonstrate the streaming effect working smoothly.",
+        isStreaming: true,
+      };
+      setMessages((prev) => [assistantMsg, ...prev]);
       setIsTyping(false);
+
+      // After streaming completes, mark as non-streaming
+      setTimeout(() => {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMsg.id ? { ...msg, isStreaming: false } : msg
+          )
+        );
+      }, assistantMsg.text!.length * 50 + 500); // Estimate stream duration
     }, 2000);
   };
 
@@ -54,23 +63,39 @@ export default function ChatScreen() {
     };
     setMessages((prev) => [newMsg, ...prev]);
 
-    // Assistant replies with the same image after 2 seconds
+    // Assistant replies with streaming text first
+    setIsTyping(true);
     setTimeout(() => {
-      setMessages((prev) => [
-        {
-          id: Date.now().toString(),
-          sender: "assistant",
-          type: "image",
-          content: {
-            uri: img.uri,
-            name: img.name,
-            size: img.size,
-            mime: img.mime,
+      const textMsg: Message = {
+        id: Date.now().toString(),
+        sender: "assistant",
+        type: "text",
+        text: `Nice image! I can see "${img.name}". Let me share it back with you.`,
+        isStreaming: true,
+      };
+      setMessages((prev) => [textMsg, ...prev]);
+      setIsTyping(false);
+
+      // Then send the image back after text completes
+      setTimeout(() => {
+        setMessages((prev) => [
+          {
+            id: Date.now().toString(),
+            sender: "assistant",
+            type: "image",
+            content: {
+              uri: img.uri,
+              name: img.name,
+              size: img.size,
+              mime: img.mime,
+            },
           },
-        },
-        ...prev,
-      ]);
-    }, 2000);
+          ...prev.map((msg) =>
+            msg.id === textMsg.id ? { ...msg, isStreaming: false } : msg
+          ),
+        ]);
+      }, textMsg.text!.length * 50 + 500);
+    }, 1500);
   };
 
   const handleFileSend = (file: any) => {
@@ -87,23 +112,28 @@ export default function ChatScreen() {
     };
     setMessages((prev) => [newMsg, ...prev]);
 
-    // Assistant replies with the same file after 2 seconds
+    // Assistant replies with streaming text
+    setIsTyping(true);
     setTimeout(() => {
-      setMessages((prev) => [
-        {
-          id: Date.now().toString(),
-          sender: "assistant",
-          type: "file",
-          content: {
-            uri: file.uri,
-            name: file.name,
-            size: file.size,
-            mime: file.mime,
-          },
-        },
-        ...prev,
-      ]);
-    }, 2000);
+      const textMsg: Message = {
+        id: Date.now().toString(),
+        sender: "assistant",
+        type: "text",
+        text: `I received your file "${file.name}" (${file.size}). Processing it now...`,
+        isStreaming: true,
+      };
+      setMessages((prev) => [textMsg, ...prev]);
+      setIsTyping(false);
+
+      // Mark streaming complete
+      setTimeout(() => {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === textMsg.id ? { ...msg, isStreaming: false } : msg
+          )
+        );
+      }, textMsg.text!.length * 50 + 500);
+    }, 1500);
   };
 
   const handleAudioSend = (audio: any) => {
@@ -121,24 +151,28 @@ export default function ChatScreen() {
     };
     setMessages((prev) => [newMsg, ...prev]);
 
-    // Assistant replies with the same audio after 2 seconds
+    // Assistant replies with streaming text about the audio
+    setIsTyping(true);
     setTimeout(() => {
-      setMessages((prev) => [
-        {
-          id: Date.now().toString(),
-          sender: "assistant",
-          type: "audio",
-          content: {
-            uri: audio.uri,
-            name: audio.name,
-            size: audio.size,
-            mime: audio.mime,
-            duration: audio.duration,
-          },
-        },
-        ...prev,
-      ]);
-    }, 2000);
+      const textMsg: Message = {
+        id: Date.now().toString(),
+        sender: "assistant",
+        type: "text",
+        text: `I listened to your voice message (${audio.duration}). Thanks for sharing!`,
+        isStreaming: true,
+      };
+      setMessages((prev) => [textMsg, ...prev]);
+      setIsTyping(false);
+
+      // Mark streaming complete
+      setTimeout(() => {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === textMsg.id ? { ...msg, isStreaming: false } : msg
+          )
+        );
+      }, textMsg.text!.length * 50 + 500);
+    }, 1500);
   };
 
   return (

@@ -163,10 +163,22 @@ export default function ChatComposer({
     <View style={styles.container}>
       {/* Left Actions */}
       <View style={styles.leftActions}>
-        <TouchableOpacity style={styles.iconButton} onPress={handleImage}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={handleImage}
+          testID="image-button"
+          accessibilityLabel="Select image from gallery"
+          accessibilityRole="button"
+        >
           <Ionicons name="image-outline" size={24} color="#555" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton} onPress={handleAttachment}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={handleAttachment}
+          testID="attachment-button"
+          accessibilityLabel="Select file attachment"
+          accessibilityRole="button"
+        >
           <Ionicons name="attach-outline" size={24} color="#555" />
         </TouchableOpacity>
       </View>
@@ -180,13 +192,21 @@ export default function ChatComposer({
           multiline
           value={text}
           onChangeText={setText}
+          accessibilityLabel="Message input"
+          accessibilityRole="none"
         />
       </View>
 
       {/* Right Action */}
       <View style={styles.rightAction}>
         {text.trim().length > 0 ? (
-          <TouchableOpacity onPress={handleSend} style={styles.iconButton}>
+          <TouchableOpacity
+            onPress={handleSend}
+            style={styles.iconButton}
+            testID="send-button"
+            accessibilityLabel="Send message"
+            accessibilityRole="button"
+          >
             <Ionicons name="send" size={24} color="#007AFF" />
           </TouchableOpacity>
         ) : (
@@ -194,6 +214,9 @@ export default function ChatComposer({
             onPressIn={handleMicPressIn}
             onPressOut={handleMicPressOut}
             style={styles.iconButton}
+            testID="mic-button"
+            accessibilityLabel="Record voice message"
+            accessibilityRole="button"
           >
             <MaterialIcons
               name={recording ? "mic" : "keyboard-voice"}

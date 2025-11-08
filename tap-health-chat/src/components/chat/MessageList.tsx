@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Message } from "../../types/message";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import StreamingMessage from "./StreamingMessage";
 
 export default function MessageList({ messages }: { messages: Message[] }) {
   const [showJump, setShowJump] = useState(false);
@@ -113,6 +114,19 @@ export default function MessageList({ messages }: { messages: Message[] }) {
           }
 
           // Render text message
+          if (item.type === "text" && item.isStreaming && item.text) {
+            return (
+              <StreamingMessage
+                fullText={item.text}
+                isUser={isUser}
+                onComplete={() => {
+                  // Streaming complete
+                }}
+              />
+            );
+          }
+
+          // Render regular text message
           return (
             <View
               style={[
@@ -133,6 +147,9 @@ export default function MessageList({ messages }: { messages: Message[] }) {
             listRef.current?.scrollToOffset({ offset: 0, animated: true });
             setShowJump(false);
           }}
+          testID="jump-to-latest-button"
+          accessibilityLabel="Jump to latest message"
+          accessibilityRole="button"
         >
           <Ionicons name="arrow-down" size={18} color="#fff" />
         </TouchableOpacity>
