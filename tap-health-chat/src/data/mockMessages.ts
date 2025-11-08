@@ -1,25 +1,19 @@
-import { ChatMessage } from "../types/chat";
-
-export const mockMessages: ChatMessage[] = [
+export const mockMessages = [
   {
     id: "1",
+    sender: "assistant",
     type: "text",
-    role: "assistant",
-    content: "Hi there 👋 How can I help you today?",
-    createdAt: Date.now() - 1000 * 60 * 3,
+    text: "Hi! How can I help you?",
   },
   {
     id: "2",
+    sender: "user",
     type: "text",
-    role: "user",
-    content: "Hey! I just wanted to test this chat UI 😄",
-    createdAt: Date.now() - 1000 * 60 * 2,
+    text: "Tell me something interesting.",
   },
   {
     id: "3",
     type: "ad",
-    role: "system",
-    content: "🔥 Tip: Upgrade to Premium for faster responses!",
-    createdAt: Date.now() - 1000 * 60,
+    text: "🔥 Get 50% off premium access today!",
   },
 ];
