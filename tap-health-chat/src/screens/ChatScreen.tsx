@@ -43,6 +43,72 @@ export default function ChatScreen() {
     }, 2000);
   };
 
+  const handleImageSend = (img: any) => {
+    const newMsg: Message = {
+      id: img.id,
+      sender: "user",
+      type: "image",
+      content: {
+        uri: img.uri,
+        name: img.name,
+        size: img.size,
+        mime: img.mime,
+      },
+    };
+    setMessages((prev) => [newMsg, ...prev]);
+
+    // Assistant replies with the same image after 2 seconds
+    setTimeout(() => {
+      setMessages((prev) => [
+        {
+          id: Date.now().toString(),
+          sender: "assistant",
+          type: "image",
+          content: {
+            uri: img.uri,
+            name: img.name,
+            size: img.size,
+            mime: img.mime,
+          },
+        },
+        ...prev,
+      ]);
+    }, 2000);
+  };
+
+  const handleFileSend = (file: any) => {
+    const newMsg: Message = {
+      id: file.id,
+      sender: "user",
+      type: "file",
+      content: {
+        uri: file.uri,
+        name: file.name,
+        size: file.size,
+        mime: file.mime,
+      },
+    };
+    setMessages((prev) => [newMsg, ...prev]);
+
+    // Assistant replies with the same file after 2 seconds
+    setTimeout(() => {
+      setMessages((prev) => [
+        {
+          id: Date.now().toString(),
+          sender: "assistant",
+          type: "file",
+          content: {
+            uri: file.uri,
+            name: file.name,
+            size: file.size,
+            mime: file.mime,
+          },
+        },
+        ...prev,
+      ]);
+    }, 2000);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["bottom"]}>
       <KeyboardAvoidingView
@@ -56,29 +122,8 @@ export default function ChatScreen() {
             {isTyping && <TypingIndicator />}
             <ChatComposer
               onSend={handleSend}
-              onAttachment={(file) => {
-                setMessages((prev) => [
-                  {
-                    id: file.id,
-                    sender: "user",
-                    type: "file",
-                    text: file.name,
-                  },
-                  ...prev,
-                ]);
-              }}
-              onImage={(img) => {
-                setMessages((prev) => [
-                  {
-                    id: img.id,
-                    sender: "user",
-                    type: "image",
-                    text: img.name,
-                    uri: img.uri,
-                  },
-                  ...prev,
-                ]);
-              }}
+              onAttachment={handleFileSend}
+              onImage={handleImageSend}
               onAudio={(audio) => {
                 setMessages((prev) => [
                   {

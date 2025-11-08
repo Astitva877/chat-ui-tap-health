@@ -1,4 +1,6 @@
-export const mockMessages = [
+import { Message } from "../types/message";
+
+export const mockMessages: Message[] = [
   {
     id: "1",
     sender: "assistant",

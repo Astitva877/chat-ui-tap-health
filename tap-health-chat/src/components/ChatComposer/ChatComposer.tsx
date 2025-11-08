@@ -8,8 +8,11 @@ import {
   Platform,
   Text,
   Pressable,
+  Alert,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
 
 interface ChatComposerProps {
   onSend: (text: string) => void;
@@ -35,27 +38,72 @@ export default function ChatComposer({
     Keyboard.dismiss();
   };
 
-  // 🖼️ Mock image
-  const handleImage = () => {
-    const mockImage = {
-      id: Date.now().toString(),
-      type: "image",
-      uri: "https://placekitten.com/200/200",
-      name: "cute-cat.jpg",
-      size: "245 KB",
-    };
-    onImage && onImage(mockImage);
+  // 🖼️ Pick image from device
+  const handleImage = async () => {
+    try {
+      // Request permissions
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (permissionResult.granted === false) {
+        Alert.alert(
+          "Permission Required",
+          "Permission to access camera roll is required!"
+        );
+        return;
+      }
+
+      // Launch image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        const imageData = {
+          id: Date.now().toString(),
+          type: "image" as const,
+          uri: asset.uri,
+          name: asset.fileName || `image-${Date.now()}.jpg`,
+          size: asset.fileSize
+            ? `${(asset.fileSize / 1024).toFixed(0)} KB`
+            : "Unknown",
+          mime: asset.mimeType || "image/jpeg",
+        };
+        onImage && onImage(imageData);
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Failed to pick image. Please try again.");
+    }
   };
 
-  // 📎 Mock file
-  const handleAttachment = () => {
-    const mockFile = {
-      id: Date.now().toString(),
-      type: "file",
-      name: "document.pdf",
-      size: "512 KB",
-    };
-    onAttachment && onAttachment(mockFile);
+  // 📎 Pick file from device
+  const handleAttachment = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "*/*",
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        const fileData = {
+          id: Date.now().toString(),
+          type: "file" as const,
+          uri: asset.uri,
+          name: asset.name,
+          size: asset.size ? `${(asset.size / 1024).toFixed(0)} KB` : "Unknown",
+          mime: asset.mimeType || "application/octet-stream",
+        };
+        onAttachment && onAttachment(fileData);
+      }
+    } catch (error) {
+      console.error("Error picking document:", error);
+      Alert.alert("Error", "Failed to pick document. Please try again.");
+    }
   };
 
   // 🎙️ Long press mic mock recording

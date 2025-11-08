@@ -7,4 +7,11 @@ export type Message = {
   uri?: string;
   name?: string;
   size?: string;
+  content?: {
+    uri: string;
+    name: string;
+    size: string;
+    mime: string;
+    thumbnail?: string;
+  };
 };
