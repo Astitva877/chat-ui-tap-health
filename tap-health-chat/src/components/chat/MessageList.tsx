@@ -5,9 +5,12 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
+  Image,
+  Keyboard,
 } from "react-native";
 import { Message } from "../../types/message";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import StreamingMessage from "./StreamingMessage";
 
 export default function MessageList({ messages }: { messages: Message[] }) {
   const [showJump, setShowJump] = useState(false);
@@ -21,6 +24,7 @@ export default function MessageList({ messages }: { messages: Message[] }) {
         inverted
         data={messages}
         keyExtractor={(item) => item.id}
+        onScrollBeginDrag={() => Keyboard.dismiss()}
         onScroll={(e) => {
           const offset = e.nativeEvent.contentOffset.y;
           if (offset > 100 && !showJump) setShowJump(true);
@@ -34,7 +38,95 @@ export default function MessageList({ messages }: { messages: Message[] }) {
               </View>
             );
           }
+
           const isUser = item.sender === "user";
+
+          // Render image message
+          if (item.type === "image" && item.content) {
+            return (
+              <View
+                style={[
+                  styles.message,
+                  isUser ? styles.userMessage : styles.assistantMessage,
+                ]}
+              >
+                <Image
+                  source={{ uri: item.content.uri }}
+                  style={styles.imageThumbnail}
+                  resizeMode="cover"
+                />
+                <Text style={styles.attachmentName}>{item.content.name}</Text>
+                <Text style={styles.attachmentSize}>{item.content.size}</Text>
+              </View>
+            );
+          }
+
+          // Render file message
+          if (item.type === "file" && item.content) {
+            return (
+              <View
+                style={[
+                  styles.message,
+                  styles.fileMessage,
+                  isUser ? styles.userMessage : styles.assistantMessage,
+                ]}
+              >
+                <View style={styles.fileIconContainer}>
+                  <MaterialIcons
+                    name="insert-drive-file"
+                    size={40}
+                    color="#555"
+                  />
+                </View>
+                <View style={styles.fileInfo}>
+                  <Text style={styles.fileName} numberOfLines={1}>
+                    {item.content.name}
+                  </Text>
+                  <Text style={styles.fileSize}>{item.content.size}</Text>
+                </View>
+              </View>
+            );
+          }
+
+          // Render audio message
+          if (item.type === "audio" && item.content) {
+            return (
+              <View
+                style={[
+                  styles.message,
+                  styles.audioMessage,
+                  isUser ? styles.userMessage : styles.assistantMessage,
+                ]}
+              >
+                <View style={styles.audioIconContainer}>
+                  <Ionicons name="play-circle" size={40} color="#007AFF" />
+                </View>
+                <View style={styles.audioInfo}>
+                  <Text style={styles.audioName} numberOfLines={1}>
+                    🎧 {item.content.name}
+                  </Text>
+                  <Text style={styles.audioDuration}>
+                    {item.content.duration}
+                  </Text>
+                </View>
+              </View>
+            );
+          }
+
+          // Render text message
+          if (item.type === "text" && item.isStreaming && item.text) {
+            return (
+              <StreamingMessage
+                fullText={item.text}
+                isUser={isUser}
+                onComplete={() => {
+                  // Streaming complete
+                }}
+              />
+            );
+          }
+
+          // Render regular text message
           return (
             <View
               style={[
@@ -55,6 +147,9 @@ export default function MessageList({ messages }: { messages: Message[] }) {
             listRef.current?.scrollToOffset({ offset: 0, animated: true });
             setShowJump(false);
           }}
+          testID="jump-to-latest-button"
+          accessibilityLabel="Jump to latest message"
+          accessibilityRole="button"
         >
           <Ionicons name="arrow-down" size={18} color="#fff" />
         </TouchableOpacity>
@@ -100,5 +195,62 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 6,
     elevation: 2,
+  },
+  imageThumbnail: {
+    width: 200,
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 4,
+  },
+  attachmentName: {
+    fontSize: 13,
+    fontWeight: "500",
+    marginTop: 4,
+  },
+  attachmentSize: {
+    fontSize: 11,
+    color: "#666",
+    marginTop: 2,
+  },
+  fileMessage: {
+    flexDirection: "row",
+    alignItems: "center",
+    minWidth: 200,
+  },
+  fileIconContainer: {
+    marginRight: 12,
+  },
+  fileInfo: {
+    flex: 1,
+  },
+  fileName: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 2,
+  },
+  fileSize: {
+    fontSize: 12,
+    color: "#666",
+  },
+  audioMessage: {
+    flexDirection: "row",
+    alignItems: "center",
+    minWidth: 200,
+  },
+  audioIconContainer: {
+    marginRight: 12,
+  },
+  audioInfo: {
+    flex: 1,
+  },
+  audioName: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 2,
+  },
+  audioDuration: {
+    fontSize: 12,
+    color: "#666",
+    fontWeight: "600",
   },
 });

@@ -7,4 +7,13 @@ export type Message = {
   uri?: string;
   name?: string;
   size?: string;
+  isStreaming?: boolean; // For streaming messages
+  content?: {
+    uri: string;
+    name: string;
+    size: string;
+    mime: string;
+    thumbnail?: string;
+    duration?: string;
+  };
 };
