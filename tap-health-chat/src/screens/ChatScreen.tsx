@@ -1,13 +1,9 @@
 import React, { useState } from "react";
+import { KeyboardAvoidingView, Platform, View, StyleSheet } from "react-native";
 import {
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
-  View,
-  StyleSheet,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import MessageList from "../components/chat/MessageList";
 import ChatComposer from "../components/ChatComposer/ChatComposer";
 import TypingIndicator from "../components/chat/TypingIndicator";
@@ -17,6 +13,7 @@ import { Message } from "../types/message";
 export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>(mockMessages);
   const [isTyping, setIsTyping] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const handleSend = (text: string) => {
     const newMsg: Message = {
@@ -145,16 +142,16 @@ export default function ChatScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["bottom"]}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={0}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.inner}>
-            <MessageList messages={messages} />
-            {isTyping && <TypingIndicator />}
+        <View style={styles.inner}>
+          <MessageList messages={messages} />
+          {isTyping && <TypingIndicator />}
+          <View style={{ paddingBottom: insets.bottom }}>
             <ChatComposer
               onSend={handleSend}
               onAttachment={handleFileSend}
@@ -162,7 +159,7 @@ export default function ChatScreen() {
               onAudio={handleAudioSend}
             />
           </View>
-        </TouchableWithoutFeedback>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  Keyboard,
 } from "react-native";
 import { Message } from "../../types/message";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -22,6 +23,7 @@ export default function MessageList({ messages }: { messages: Message[] }) {
         inverted
         data={messages}
         keyExtractor={(item) => item.id}
+        onScrollBeginDrag={() => Keyboard.dismiss()}
         onScroll={(e) => {
           const offset = e.nativeEvent.contentOffset.y;
           if (offset > 100 && !showJump) setShowJump(true);
