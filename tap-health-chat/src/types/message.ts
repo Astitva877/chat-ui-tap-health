@@ -13,5 +13,6 @@ export type Message = {
     size: string;
     mime: string;
     thumbnail?: string;
+    duration?: string;
   };
 };

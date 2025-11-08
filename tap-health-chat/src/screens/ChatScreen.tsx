@@ -109,6 +109,41 @@ export default function ChatScreen() {
     }, 2000);
   };
 
+  const handleAudioSend = (audio: any) => {
+    const newMsg: Message = {
+      id: audio.id,
+      sender: "user",
+      type: "audio",
+      content: {
+        uri: audio.uri,
+        name: audio.name,
+        size: audio.size,
+        mime: audio.mime,
+        duration: audio.duration,
+      },
+    };
+    setMessages((prev) => [newMsg, ...prev]);
+
+    // Assistant replies with the same audio after 2 seconds
+    setTimeout(() => {
+      setMessages((prev) => [
+        {
+          id: Date.now().toString(),
+          sender: "assistant",
+          type: "audio",
+          content: {
+            uri: audio.uri,
+            name: audio.name,
+            size: audio.size,
+            mime: audio.mime,
+            duration: audio.duration,
+          },
+        },
+        ...prev,
+      ]);
+    }, 2000);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["bottom"]}>
       <KeyboardAvoidingView
@@ -124,17 +159,7 @@ export default function ChatScreen() {
               onSend={handleSend}
               onAttachment={handleFileSend}
               onImage={handleImageSend}
-              onAudio={(audio) => {
-                setMessages((prev) => [
-                  {
-                    id: audio.id,
-                    sender: "user",
-                    type: "audio",
-                    text: `🎧 ${audio.name} (${audio.duration})`,
-                  },
-                  ...prev,
-                ]);
-              }}
+              onAudio={handleAudioSend}
             />
           </View>
         </TouchableWithoutFeedback>

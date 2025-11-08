@@ -85,6 +85,31 @@ export default function MessageList({ messages }: { messages: Message[] }) {
             );
           }
 
+          // Render audio message
+          if (item.type === "audio" && item.content) {
+            return (
+              <View
+                style={[
+                  styles.message,
+                  styles.audioMessage,
+                  isUser ? styles.userMessage : styles.assistantMessage,
+                ]}
+              >
+                <View style={styles.audioIconContainer}>
+                  <Ionicons name="play-circle" size={40} color="#007AFF" />
+                </View>
+                <View style={styles.audioInfo}>
+                  <Text style={styles.audioName} numberOfLines={1}>
+                    🎧 {item.content.name}
+                  </Text>
+                  <Text style={styles.audioDuration}>
+                    {item.content.duration}
+                  </Text>
+                </View>
+              </View>
+            );
+          }
+
           // Render text message
           return (
             <View
@@ -187,5 +212,26 @@ const styles = StyleSheet.create({
   fileSize: {
     fontSize: 12,
     color: "#666",
+  },
+  audioMessage: {
+    flexDirection: "row",
+    alignItems: "center",
+    minWidth: 200,
+  },
+  audioIconContainer: {
+    marginRight: 12,
+  },
+  audioInfo: {
+    flex: 1,
+  },
+  audioName: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 2,
+  },
+  audioDuration: {
+    fontSize: 12,
+    color: "#666",
+    fontWeight: "600",
   },
 });

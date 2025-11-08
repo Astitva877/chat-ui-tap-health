@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -9,6 +9,7 @@ import {
   Text,
   Pressable,
   Alert,
+  Modal,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -29,7 +30,9 @@ export default function ChatComposer({
 }: ChatComposerProps) {
   const [text, setText] = useState("");
   const [recording, setRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
   const micTimer = useRef<NodeJS.Timeout | null>(null);
+  const countdownTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleSend = () => {
     if (!text.trim()) return;
@@ -106,25 +109,55 @@ export default function ChatComposer({
     }
   };
 
-  // 🎙️ Long press mic mock recording
+  // 🎙️ Start recording with modal and countdown
   const handleMicPressIn = () => {
     setRecording(true);
+    setRecordingTime(0);
+
+    // Countdown timer (updates every second)
+    let currentTime = 0;
+    countdownTimer.current = setInterval(() => {
+      currentTime += 1;
+      setRecordingTime(currentTime);
+    }, 1000);
+
+    // Auto-stop after 4 seconds
     micTimer.current = setTimeout(() => {
-      setRecording(false);
+      handleMicPressOut();
+      const duration = 4;
       const mockAudio = {
         id: Date.now().toString(),
-        type: "audio",
+        type: "audio" as const,
+        uri: "mock://audio/voice-note.m4a",
         name: "voice-note.m4a",
-        duration: `${Math.floor(3 + Math.random() * 2)}s`,
+        size: "48 KB",
+        mime: "audio/m4a",
+        duration: `${duration}s`,
       };
       onAudio && onAudio(mockAudio);
-    }, 3000);
+    }, 4000);
   };
 
   const handleMicPressOut = () => {
     setRecording(false);
-    if (micTimer.current) clearTimeout(micTimer.current);
+    setRecordingTime(0);
+    if (micTimer.current) {
+      clearTimeout(micTimer.current);
+      micTimer.current = null;
+    }
+    if (countdownTimer.current) {
+      clearInterval(countdownTimer.current);
+      countdownTimer.current = null;
+    }
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (micTimer.current) clearTimeout(micTimer.current);
+      if (countdownTimer.current) clearInterval(countdownTimer.current);
+    };
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -171,12 +204,26 @@ export default function ChatComposer({
         )}
       </View>
 
-      {/* Recording Overlay */}
-      {recording && (
-        <View style={styles.recordingBubble}>
-          <Text style={styles.recordingText}>🎙️ Recording...</Text>
+      {/* Recording Modal */}
+      <Modal
+        visible={recording}
+        transparent
+        animationType="fade"
+        onRequestClose={handleMicPressOut}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.recordingModal}>
+            <View style={styles.recordingIconContainer}>
+              <MaterialIcons name="mic" size={60} color="#FF3B30" />
+            </View>
+            <Text style={styles.recordingTitle}>Recording...</Text>
+            <Text style={styles.recordingTimer}>{recordingTime}s / 4s</Text>
+            <Text style={styles.recordingHint}>
+              Release to unsend or hold for 4 seconds
+            </Text>
+          </View>
         </View>
-      )}
+      </Modal>
     </View>
   );
 }
@@ -216,17 +263,48 @@ const styles = StyleSheet.create({
   rightAction: {
     justifyContent: "flex-end",
   },
-  recordingBubble: {
-    position: "absolute",
-    bottom: 60,
-    right: 20,
-    backgroundColor: "#333",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  recordingText: {
-    color: "#fff",
-    fontWeight: "500",
+  recordingModal: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 30,
+    alignItems: "center",
+    minWidth: 280,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  recordingIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#FFE5E5",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  recordingTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 8,
+  },
+  recordingTimer: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#FF3B30",
+    marginBottom: 16,
+  },
+  recordingHint: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
   },
 });
